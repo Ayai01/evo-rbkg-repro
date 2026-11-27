@@ -4,16 +4,15 @@ This repository reproduces a bounded Streaming FIR run for **Task-Level Protecti
 
 ## Run
 
-Use Python 3.11 or newer. The smoke check runs on Windows or Linux. For the RTL run, use Linux on x86-64 or ARM64, or Ubuntu under WSL, with Verilator, GNU Make and a C++ compiler.
+On x86-64 Ubuntu or Debian, including WSL, install the environment and run both checks:
 
 ```sh
-python -m pip install -r requirements.txt
-python -B reproduce.py smoke
-
-# On Ubuntu, if the RTL tools are missing:
-sudo apt-get install verilator make g++
-python -B reproduce.py quick --fte 300 --jobs 2
+bash setup.sh
+.venv/bin/python -B reproduce.py smoke
+.venv/bin/python -B reproduce.py quick --fte 300 --jobs 2
 ```
+
+The setup script installs missing build tools with APT and the pinned Python dependencies and Verilator wheel into `.venv`. It uses `sudo` only for missing system tools. On another architecture, `quick` can use a system-installed Verilator 5.026 or newer. For the Python-only smoke check on Windows, run `python -m pip install -r requirements.txt` followed by `python -B reproduce.py smoke`.
 
 - `smoke` replays the first three registered optimizer decisions for seed 11. It checks chosen layouts, block IDs, terminal nominations, analytic area and exact cumulative FTE using archived labels and segment counts.
 - `quick` builds the FIR receiver once in a temporary directory. It first checks two archived hardware witnesses, one from each root block. Together these cover 160 faulted evaluations at 200 FTE including clean checks. It then starts a fresh three-block search and reports measured FTE, selected layouts, terminal failures and active CPU time.

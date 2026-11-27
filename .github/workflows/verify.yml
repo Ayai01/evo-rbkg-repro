@@ -13,11 +13,11 @@ jobs:
       OPENBLAS_NUM_THREADS: "1"
       OMP_NUM_THREADS: "1"
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - run: python -m pip install -r requirements.txt
-      - run: python -B reproduce.py smoke
-      - run: sudo apt-get update -q && sudo apt-get install -y --no-install-recommends verilator
-      - run: python -B reproduce.py quick --fte 300 --jobs 2
+      - uses: actions/checkout@v6
+      - run: bash setup.sh
+      - run: .venv/bin/python -B reproduce.py smoke
+      - name: Verify native labels and whole-block budget
+        run: |
+          .venv/bin/python -B reproduce.py quick --fte 350 --jobs 2 > "$RUNNER_TEMP/quick.json"
+          cat "$RUNNER_TEMP/quick.json"
+          .venv/bin/python -c 'import json,sys; r=json.load(open(sys.argv[1])); assert len(r["actions"]) == 3 and r["used_FTE"] == "300"; assert r["native_witnesses"]["fault_cases"] == 160 and r["native_witnesses"]["FTE"] == "200"' "$RUNNER_TEMP/quick.json"

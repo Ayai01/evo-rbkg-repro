@@ -145,8 +145,11 @@ def build(data, work, jobs):
     objects = work / "obj"
     for path, key in zip(sources, ("rtl_sha256", "harness_sha256"), strict=True):
         require(sha256(path.read_bytes()).hexdigest() == data[key], f"Source fingerprint mismatch: {path.name}")
+    installed = Path(sys.executable).with_name("verilator-dspsim")
+    executable = str(installed) if installed.is_file() else shutil.which("verilator")
+    require(executable, "Run bash setup.sh or install Verilator 5.026 or newer")
     subprocess.run(
-        ["verilator", "--cc", str(sources[0]), "--exe", str(sources[1]),
+        [executable, "--cc", str(sources[0]), "--exe", str(sources[1]),
          "--top-module", "FirStream", "--Mdir", str(objects), "-o", "fir",
          "--output-split", "2000", "--output-split-cfuncs", "400", "-Wno-fatal",
          "-CFLAGS", "-std=c++17 -DVL_TIME_CONTEXT -fwrapv -fno-strict-aliasing",
