@@ -16,6 +16,7 @@ jobs:
       - uses: actions/checkout@v6
       - run: bash setup.sh
       - run: .venv/bin/python -B reproduce.py smoke
+      - run: .venv/bin/python -B verify_paper.py
       - name: Verify native labels and whole-block budget
         run: |
           .venv/bin/python -B reproduce.py quick --fte 350 --jobs 2 > "$RUNNER_TEMP/quick.json"
